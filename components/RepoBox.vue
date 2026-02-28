@@ -9,19 +9,29 @@
     @click="toggle(repo.id)"
   >
     <div class="px-5 py-3">
-      <div class="flex flex-row">
+      <div class="flex flex-row items-center">
         <a
           :title="`Open ${repo.owner}/${repo.name} on GitHub`"
           :href="repo.url"
           target="_blank"
           rel="noopener noreferrer"
-          class="text-lg font-semibold group-hover:text-juniper"
+          class="text-lg font-semibold group-hover:text-juniper truncate"
           :class="{ 'text-juniper': isCardOpen }"
           >{{ repo.owner }} / {{ repo.name }}</a
         >
+
         <span class="flex-1"></span>
+
         <span
-          class="hidden md:inline text-sm border px-3 py-1 ml-2 rounded-full font-semibold"
+          v-if="isTrendingRepo"
+          class="mr-3 px-2 py-0.5 text-xs font-bold uppercase tracking-wider text-orange-500 bg-orange-500/10 border border-orange-500/20 rounded-full shrink-0"
+          title="Repositório em alta baseado em estrelas!"
+        >
+          🔥 Trending
+        </span>
+
+        <span
+          class="hidden md:inline text-sm border px-3 py-1 rounded-full font-semibold shrink-0"
           :class="{
             'text-ink-400 bg-juniper border-transparent': isCardOpen,
             'text-vanilla-200': !isCardOpen
@@ -29,7 +39,8 @@
           >{{ issuesDisplay }}</span
         >
       </div>
-      <div class="flex-row flex text-sm py-1 overflow-auto">
+      
+      <div class="flex-row flex text-sm py-1 overflow-auto mt-1">
         {{ repo.description }}
       </div>
       <div
@@ -70,9 +81,12 @@
 </template>
 
 <script setup>
+import { computed } from 'vue'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { ChatBubbleLeftRightIcon } from '@heroicons/vue/24/outline'
+
+// import { useOpenRepoId } from '@/composables/useOpenRepoId' // Descomente/ajuste de acordo com seu projeto
 
 dayjs.extend(relativeTime)
 
@@ -84,6 +98,12 @@ const props = defineProps({
 })
 
 const openRepoId = useOpenRepoId()
+
+const TRENDING_STARS_THRESHOLD = 2000
+
+const isTrendingRepo = computed(() => {
+  return props.repo.stars >= TRENDING_STARS_THRESHOLD
+})
 
 const issuesDisplay = computed(() => {
   const numIssues = props.repo.issues.length
